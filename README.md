@@ -7,3 +7,6 @@ Generates csv file with following headers:
 Channel Number, Channel Name, Network Name, SID, Start Time, End Time, Program Title, Program Description
 
 The script replicates each channel's details for every program associated with that channel's SID.
+
+
+Inspired by: https://github.com/Plebster/sky_epg_grab
