@@ -11,7 +11,8 @@ class SkyEPGController extends Controller
 {
     public function getSkyEPGData(Request $request)
     {
-        $days = 1;
+        $timerStart = microtime(true);
+        $days = 2;
         $region = 1;
 
         $channelNameUri = "https://www.mediamole.co.uk/entertainment/broadcasting/information/sky-full-channels-list-epg-numbers-and-local-differences_441957.html";
@@ -20,9 +21,17 @@ class SkyEPGController extends Controller
         $channelDetailsUri = "https://awk.epgsky.com/hawk/linear/services/4101/{$region}";
         $channelDetails = $this->getChannelDetails($channelDetailsUri, $channelNames);
 
+        DB::table('sky_schedule')->truncate();
+
         $this->getEpgUris($channelDetails, $days);
 
-        return response()->json(['message' => 'Data fetched and stored successfully'], 200);
+        $timerEnd = microtime(true);
+        $executionTime = round($timerEnd - $timerStart, 2);
+
+        return response()->json([
+            'message' => 'Data fetched, cleared previous data, and stored new data successfully',
+            'execution_time' => "{$executionTime} seconds"
+        ], 200);
     }
 
     private function getChannelNames($url)
@@ -84,9 +93,9 @@ class SkyEPGController extends Controller
         foreach ($daysListings['schedule'] as $schedule) {
             $channelId = $schedule['sid'];
             foreach ($schedule['events'] as $program) {
-                $scheduleDate = Carbon::createFromTimestamp($program['st'])->format('Ymd');
-                $startTime = Carbon::createFromTimestamp($program['st'])->format('Hi');
-                $endTime = Carbon::createFromTimestamp($program['st'] + $program['d'])->format('Hi');
+                $scheduleDate = Carbon::createFromTimestamp($program['st'])->format('Y-m-d');
+                $startTime = Carbon::createFromTimestamp($program['st'])->format('H:i');
+                $endTime = Carbon::createFromTimestamp($program['st'] + $program['d'])->format('H:i');
                 $title = $program['t'];
                 $desc = $program['sy'] ?? "";
 
